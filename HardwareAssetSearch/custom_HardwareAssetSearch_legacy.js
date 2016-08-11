@@ -3,33 +3,24 @@
 /* ----------------------------------------------- */
 // v6.0.RC
 // Contributors: William Udovich, Joivan Hedrick
-// Description: Adds hardware asset search functionality to the navigation node.
+// Description: Adds hardware asset search functionality to the navigation node. 
+// Legacy edition uses a setTimeout, unstead of MutationObserver. setTimeout still exists in IE10, whereas MutationObserver does not.
 $(document).ready(function () {
 	if (session.user.AssetManager === 0 && session.user.IsAdmin === false) {
 		return;
 	}
 		
-	//The navigation node doesn't load immediately. Get the main div that definitely exists.
-	var mainPageNode = document.getElementById('main_wrapper');
-	
-	// create an observer instance
-	var observer = new MutationObserver(function(mutations) {
-		//The page changed. See if our element exists yet.
-		if ($("#searchAsset").length > 0) { //It was already added once from somewhere. Fixes an IE multi-observer bug.
-			observer.disconnect();
-			return;
-		}
-		
-		var hardwareAssetNav = $(".nav_trigger").find("h4:contains(Hardware Assets)").first().parent();
-		if (hardwareAssetNav.length > 0) {
-			fn_AddHardwareAssetSearchField(hardwareAssetNav);
-			observer.disconnect();
-		}
-	});
-	
-	// configure the observer and start the instance.
-	var observerConfig = { attributes: true, childList: true, subtree: true, characterData: true };
-	observer.observe(mainPageNode, observerConfig);
+	var hardwareAssetNav = $(".nav_trigger").find("h4:contains(Hardware Assets)").first().parent();
+	if (hardwareAssetNav.length === 0) {
+		setTimeout(
+			function() {
+				//re-obtain the hardware asset nav node. 
+				fn_AddHardwareAssetSearchField();
+			}, 
+		2500);
+	}
+	else
+		fn_AddHardwareAssetSearchField(hardwareAssetNav);
 	
 	//Create the function for creating the search control.
 	function fn_AddHardwareAssetSearchField (navNodeDiv) {

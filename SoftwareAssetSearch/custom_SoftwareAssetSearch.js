@@ -1,7 +1,7 @@
 /* ----------------------------------------------- */
 /* ------------ Software Asset Search ------------ */
 /* ----------------------------------------------- */
-// v5.0.6.3
+// v6.0.RC
 // Contributors: William Udovich, Joivan Hedrick
 // Description: Adds software asset search functionality to the navigation node
 $(document).ready(function () {
