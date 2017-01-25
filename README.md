@@ -1,12 +1,12 @@
 # Portal Asset Search
-
+### Installation
 Copy the code in custom_HardwareAssetSearch.js , and place it anywhere in your customspace folder. 
 
 Alternatively, copy the file and place it into your customspace directory, and then add the following line to your custom.js file:
 
 $.getScript("/CustomSpace/custom_HardwareAssetSearch.js");
 
-Purpose:
+### Purpose
 
 After this script is in place, it will add an input box within the Hardware Asset navigation node on the left, which allows a very fast dynamic search of hardware assets by Display Name. 
 
