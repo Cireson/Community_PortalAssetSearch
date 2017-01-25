@@ -1,26 +1,35 @@
 /* ----------------------------------------------- */
 /* ------------ Hardware Asset Search ------------ */
 /* ----------------------------------------------- */
-// v6.0.2.1.Legacy
+// v6.0.2.1.GPBC
 // Contributors: William Udovich, Joivan Hedrick, Nick Velich
-// Description: Adds hardware asset search functionality to the navigation node. 
-// Legacy edition uses a setTimeout, unstead of MutationObserver. setTimeout still exists in IE10, whereas MutationObserver does not.
+// Description: Adds hardware asset search functionality to the navigation node, GetProjectionByCriteria style.
 $(document).ready(function () {
 	if (session.user.AssetManager === 0 && session.user.IsAdmin === false) {
 		return;
 	}
 		
-	var hardwareAssetNav = $(".nav_trigger").find("h4:contains(Hardware Assets)").first().parent();
-	if (hardwareAssetNav.length === 0) {
-		setTimeout(
-			function() {
-				//re-obtain the hardware asset nav node. 
-				fn_AddHardwareAssetSearchField();
-			}, 
-		2500);
-	}
-	else
-		fn_AddHardwareAssetSearchField(hardwareAssetNav);
+	//The navigation node doesn't load immediately. Get the main div that definitely exists.
+	var mainPageNode = document.getElementById('main_wrapper');
+	
+	// create an observer instance
+	var observer = new MutationObserver(function(mutations) {
+		//The page changed. See if our element exists yet.
+		if ($("#searchAsset").length > 0) { //It was already added once from somewhere. Fixes an IE multi-observer bug.
+			observer.disconnect();
+			return;
+		}
+		
+		var hardwareAssetNav = $(".nav_trigger").find("h4:contains(Hardware Assets)").first().parent();
+		if (hardwareAssetNav.length > 0) {
+			fn_AddHardwareAssetSearchField(hardwareAssetNav);
+			observer.disconnect();
+		}
+	});
+	
+	// configure the observer and start the instance.
+	var observerConfig = { attributes: true, childList: true, subtree: true, characterData: true };
+	observer.observe(mainPageNode, observerConfig);
 	
 	//Create the function for creating the search control.
 	function fn_AddHardwareAssetSearchField (navNodeDiv) {
@@ -32,25 +41,57 @@ $(document).ready(function () {
 								"</div>" + 
 								"<input type='text' id='searchAsset' style='color: #000000; width: 95%;' />" + 
 							"</div>");
+		
+		var strHardwareAssetProjection = "6fd42dd3-81b4-ec8d-14d6-08af1e83f63a"; //Cireson.AssetManagement.HardwareAsset.Minimum
+		
+		var thisDataSource = new kendo.data.DataSource({
+            serverFiltering: true,
+            transport: {
+                read: {
+					type:"POST",
+					url:"/api/V3/Projection/GetProjectionByCriteria",
+					contentType: 'application/json; charset=UTF-8',
+					dataType: "json"
+				},
+				parameterMap: function(options, operation) {                                       
+					//console.log(options);
+					//console.log(operation);
+					
+					var strObjectCriteria = {
+						"Id": strHardwareAssetProjection,
+						"Criteria": {
+							"Base": {
+								"Expression": [{
+									"SimpleExpression": {
+										"ValueExpressionLeft": {
+											"GenericProperty": "DisplayName"              
+										},
+										"Operator": "Like",
+										"ValueExpressionRight": {
+											"Value": "%" + options.filter.filters[0].value + "%"
+										}            
+									}          
+								}]         
+							}
+						}
+					}
+					
+					return JSON.stringify(strObjectCriteria);
+			    }
+				
+			}
+		});
+		
 		$("#searchAsset").kendoAutoComplete({
 			dataTextField: "DisplayName",
 			filter: "contains",
 			placeholder: "Type the name...",
 			minLength: 3,
 			delay: 500,
-			dataSource: { 
-				serverFiltering: true,
-				transport: {
-					read: {
-						url:"/api/V3/Config/GetConfigItemsByAbstractClass?userId=" + session.user.Id + "&isUserScoped=false&objectClassId=c0c58e7f-7865-55cc-4600-753305b9be64" 
-					},
-					parameterMap: function (options) {
-							return { searchFilter: options.filter.filters[0].value };
-					}
-				}
-			},
+			dataSource: thisDataSource,
 			select: function(e) {
-				var newWindow = window.open('/AssetManagement/HardwareAsset/Edit/' + this.dataItem(e.item.index()).Id, '_blank');
+				var url = '/AssetManagement/HardwareAsset/Edit/' + this.dataItem(e.item.index()).BaseId;
+				var newWindow = window.open(url, '_blank');
 				newWindow.focus();
 			},
 			change: function(e) {

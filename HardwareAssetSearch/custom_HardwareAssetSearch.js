@@ -1,8 +1,8 @@
 /* ----------------------------------------------- */
 /* ------------ Hardware Asset Search ------------ */
 /* ----------------------------------------------- */
-// v6.0.RC
-// Contributors: William Udovich, Joivan Hedrick
+// v6.0.2.1
+// Contributors: William Udovich, Joivan Hedrick, Nick Velich
 // Description: Adds hardware asset search functionality to the navigation node.
 $(document).ready(function () {
 	if (session.user.AssetManager === 0 && session.user.IsAdmin === false) {
@@ -48,7 +48,6 @@ $(document).ready(function () {
 			minLength: 3,
 			delay: 500,
 			dataSource: { 
-				type: "json",
 				serverFiltering: true,
 				transport: {
 					read: {
