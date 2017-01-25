@@ -1,4 +1,4 @@
-# PortalAssetSearch
+# Portal Asset Search
 
 Copy the code in custom_HardwareAssetSearch.js , and place it anywhere in your customspace folder. 
 
